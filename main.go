@@ -1,39 +1,23 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
-	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
-	"log"
 	"net/http"
 )
 
 func main() {
-	r := mux.NewRouter()
-
-	connStr := "postgresql://neondb_owner:npg_oaPWgrt3I9HF@ep-restless-term-a1zqk61y-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
-	db, err := sql.Open("postgres", connStr)
-
-	if err != nil {
-		log.Fatal(err)
+	server := &http.Server{
+		Addr:    ":3000",
+		Handler: http.HandlerFunc(basicHandler),
 	}
 
-	defer db.Close()
+	err := server.ListenAndServe()
 
-	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error while starting server", err)
 	}
+}
 
-	fmt.Println("Successfully connected to the database!")
-
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Hello World!"))
-	})
-
-	log.Println("Server is running on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
-
+func basicHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello World"))
 }
