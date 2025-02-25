@@ -1,31 +1,23 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"net/http"
+	"github.com/sidhuiwnl/RestAPI.git/app"
+	"os"
+	"os/signal"
 )
 
 func main() {
-	router := chi.NewRouter()
+	apps := app.New()
 
-	router.Use(middleware.Logger)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt) // our own context which responds to our own signal like ctrl + c for graceful shutdown
 
-	router.Get("/hello", basicHandler)
+	err := apps.Start(ctx)
 
-	server := &http.Server{
-		Addr:    ":3000",
-		Handler: router,
-	}
-
-	err := server.ListenAndServe()
+	defer cancel()
 
 	if err != nil {
-		fmt.Println("Error while starting server", err)
+		fmt.Println("failed to start app:", err)
 	}
-}
-
-func basicHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello World"))
 }
